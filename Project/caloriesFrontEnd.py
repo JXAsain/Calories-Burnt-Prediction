@@ -4,20 +4,20 @@ import requests
 st.title("🔥Calorie Burnt Prediction App🔥")
 
 # User input fields
-weight = st.number_input("Weight (lb): ", min_value=0.0, max_value=0.0, step=0.1)
 age = st.number_input("Age: ", min_value=0, max_value=0, step=1)
 gender = st.selectbox("Gender", ["Select", "Male", "Female"])
+height = st.number_input("Height📏(cm): ", min_value=0.0, max_value=0.0, step=0.1)
 rate = st.number_input("Heart Rate💓(bpm): ", min_value=0, max_value=0, step=1)
-duration = st.number_input("Workout Duration💦(min): ", min_value=0, max_value=0, step=1)
+intensity = st.number_input("Body Temperature🌡️(C): ", min_value=0, max_value=0, step=1)
 
 # Button to send data to backend API
 if st.button("🚨 CALORIE PREDICTION"):
     userData = {
-        "weight": weight,
         "age": age,
         "gender": gender,
+        "height": height,
         "heart": rate,
-        "workout": duration
+        "bodyTemp": intensity
     }
     response = requests.post("http://127.0.0.1:5000/predict", json=userData)
     
