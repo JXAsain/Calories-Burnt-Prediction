@@ -1,5 +1,4 @@
 import streamlit as st
-import requests
 import modelFile
 
 st.title("🔥Calorie Burnt Prediction App🔥")
