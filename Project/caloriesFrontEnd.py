@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import modelFile
 
 st.title("🔥Calorie Burnt Prediction App🔥")
 
@@ -19,10 +20,18 @@ if st.button("🚨 CALORIE PREDICTION"):
         "heart": rate,
         "bodyTemp": intensity
     }
-    response = requests.post("http://127.0.0.1:5000/predict", json=userData)
-    
-    if response.status_code == 200:
-        result = response.json()
-        st.success(f"🔥Estimated Calories Burnt: {result['caloriesBurnt']} lb🔥")
+
+    # Double checks a expected gender was selected
+    if gender == "Select":
+        st.error("⚠️ Please select a valid gender ⚠️")
     else:
-        st.error("⚠️Error: Failed to retrieve your prediction.⚠️")
+        userData["Gender"] = gender
+        
+        try:
+            # Calls modelFile to run prediction
+            predictedCalories = modelFile.run(userData)
+            st.success(f"🔥Estimated Calories Burnt: {predictedCalories[0]:.2f} kcal🔥")
+        
+        except Exception:
+            # Output message should system fails
+            st.error("⚠️ Failed to retrieve your prediction ⚠️")
