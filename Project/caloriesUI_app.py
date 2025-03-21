@@ -58,7 +58,7 @@ class CaloriePredictor(QWidget):
         heart_rate = self.heartRateInput.text()
         body_temp = self.bodyTempInput.text()
 
-        if gender == "Select":
+        if gender == "Select Gender Here":
             QMessageBox.warning(self, "Input Error", "⚠️ Please select a valid gender ⚠️")
             return
         
