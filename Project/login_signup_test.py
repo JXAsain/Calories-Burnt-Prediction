@@ -45,6 +45,10 @@ class LoginWindow(QWidget):
         button_signup = QPushButton('&Sign Up', clicked=self.signUp)
         layout.addWidget(button_signup, 2, 2, 1, 1)
 
+        # guest login button
+        button_guest = QPushButton('&Guest', clicked=self.guestLogin)
+        layout.addWidget(button_guest, 2, 1, 1, 1)
+
         # error text
         self.status = QLabel('')
         self.status.setStyleSheet('color:red;')
@@ -121,6 +125,14 @@ class LoginWindow(QWidget):
             self.status.setText('Sign Up Successful!')
         else:
             self.status.setText('Username already exists')
+
+    # doesnt require username or password to open app, nothing is saved
+    def guestLogin(self):
+         # Open the caloriesUI_app.py
+        self.otherApp = CaloriePredictor()  # Create an instance of the other app
+        self.otherApp.show()  # Show the other application window
+        self.close()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
