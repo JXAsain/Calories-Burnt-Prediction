@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import hashlib
-from PyQt6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QGridLayout, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QGridLayout, QSizePolicy, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtSql import QSqlDatabase, QSqlQuery, QSqlError
@@ -49,11 +49,6 @@ class LoginWindow(QWidget):
         button_guest = QPushButton('&Guest', clicked=self.guestLogin)
         layout.addWidget(button_guest, 2, 1, 1, 1)
 
-        # error text
-        self.status = QLabel('')
-        self.status.setStyleSheet('color:red;')
-        layout.addWidget(self.status)
-        
         # connects to the local database 
         self.connectToDB()
 
@@ -63,7 +58,7 @@ class LoginWindow(QWidget):
         self.db.setDatabaseName(db_path)
 
         if not self.db.open():
-            self.status.setText(f'Connection Failed: {self.db.lastError().text()}')
+            QMessageBox.warning(self, 'Connection Error',f'Connection Failed: {self.db.lastError().text()}')
         else:
             self.createUsersTable()
     
@@ -102,9 +97,9 @@ class LoginWindow(QWidget):
                 self.close()
 
             else:
-                self.status.setText('Password is incorrect')
+                QMessageBox.warning(self, 'Input Error','Password is incorrect')
         else:
-            self.status.setText('Username is not found')
+            QMessageBox.warning(self, 'Input Error','Username is not found')
 
     # takes the text in username and password lines and creates a username and password in the db for it, usernames must be unique, hashs the password
     def signUp(self):
@@ -113,7 +108,7 @@ class LoginWindow(QWidget):
         hashed_password = self.hashPassword(password)
 
         if not username or not password:
-            self.status.setText('Username and Password required')
+            QMessageBox.warning(self, 'Input Error', 'Username and Password required')
             return
 
         query = QSqlQuery()
@@ -122,9 +117,9 @@ class LoginWindow(QWidget):
         query.bindValue(':password', hashed_password)
 
         if query.exec():
-            self.status.setText('Sign Up Successful!')
+            QMessageBox.warning(self, 'Success','Sign Up Successful!')
         else:
-            self.status.setText('Username already exists')
+            QMessageBox.warning(self, 'Input Error','Username already exists')
 
     # doesnt require username or password to open app, nothing is saved
     def guestLogin(self):
