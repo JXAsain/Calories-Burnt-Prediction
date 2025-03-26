@@ -52,14 +52,31 @@ class CaloriePredictor(QWidget):
     
     def predictCalories(self):
         # When Button is Clicked it Processes User Input
-        age = self.ageInput.text()
+        age = int(self.ageInput.text())
         gender = self.genderInput.currentText()
-        height = self.heightInput.text()
-        heart_rate = self.heartRateInput.text()
-        body_temp = self.bodyTempInput.text()
+        height = int(self.heightInput.text())
+        heart_rate = int(self.heartRateInput.text())
+        body_temp = float(self.bodyTempInput.text())
 
         if gender == "Select Gender Here":
             QMessageBox.warning(self, "Input Error", "⚠️ Please select a valid gender ⚠️")
+            return
+        
+        # Limiter Control Here
+        if not (0 <= age <= 130):
+            QMessageBox.warning(self, "Input Error", "⚠️ Age must be between 0 and 130 years ⚠️")
+            return
+        
+        if not (1 <= height <= 275):
+            QMessageBox.warning(self, "Input Error", "⚠️ Height must be between 1 and 275 cm ⚠️")
+            return
+        
+        if not (20 <= heart_rate <= 220):
+            QMessageBox.warning(self, "Input Error", "⚠️ Heart rate must be between 20 and 220 bpm ⚠️")
+            return
+        
+        if not (35.0 <= body_temp <= 42.0):
+            QMessageBox.warning(self, "Input Error", "⚠️ Body temperature must be between 35.0 and 42.0 °C ⚠️")
             return
         
         try:
