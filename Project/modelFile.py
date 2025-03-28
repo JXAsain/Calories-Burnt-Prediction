@@ -1,8 +1,8 @@
 import joblib
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-
 import warnings 
+import pandas as pd
 
 def run(dict):
     warnings.filterwarnings('ignore')
@@ -27,3 +27,15 @@ def run(dict):
     predicted_calories = loaded_model.predict(sample_input)
     print(f"Predicted Calories: {predicted_calories[0]:.2f}")
     return predicted_calories
+
+
+def percentile(attr, value):
+    dataframe = pd.read_csv('merged_data.csv')
+    data = dataframe[attr]
+    sorted = np.sort(data)
+
+    rank = (sorted < value).sum() 
+    
+    percentile = (rank / len(sorted)) * 100
+    percentile = round(percentile, 2)
+    return percentile
