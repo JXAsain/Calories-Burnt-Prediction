@@ -28,6 +28,10 @@ def run(dict):
     
     # Make a prediction
     predicted_calories = loaded_model.predict(sample_input)
+
+    # Add predicted_calories to the dictionary
+    dict['calories'] = predicted_calories
+
     print(f"Predicted Calories: {predicted_calories[0]:.2f}")
     return predicted_calories
 
@@ -43,13 +47,23 @@ def percentile(attr, value):
     percentile = round(percentile, 2)
     return percentile
 
+# uses the user input to put them into a histogram of our data
 def userdata_compare_histogram(dict):
+
+    # Converts the apps dict style and adds calories value to the dict
+    user_data = {
+        "Age": dict["age"],
+        "Height": dict["height"],
+        "Heart_Rate": dict["heart"],
+        "Body_Temp": dict["bodytemp"],
+        "Calories": dict["calories"] 
+    }
     
     # Turns the merged data into a dataframe
     df = pd.read_csv('merged_data.csv')
 
     # Convert dictionary to DataFrame
-    user_df = pd.DataFrame(dict)
+    user_df = pd.DataFrame(user_data)
     # Features to analyze
     features = ['Age', 'Height', 'Heart_Rate', 'Body_Temp']
 
@@ -75,15 +89,24 @@ def userdata_compare_histogram(dict):
     plt.legend()
     plt.show()
 
-
+# uses the user input to put them into a histogram of our data
 def userdata_compare_statter(dict):
+
+    # Converts the apps dict style and adds calories value to the dict
+    user_data = {
+        "Age": dict["age"],
+        "Height": dict["height"],
+        "Heart_Rate": dict["heart"],
+        "Body_Temp": dict["bodytemp"],
+        "Calories": dict["calories"] 
+    }
     
     # Turns the merged data into a dataframe
     df = pd.read_csv('merged_data.csv')
 
     # Convert dictionary to DataFrame
-    user_df = pd.DataFrame(dict)
-    
+    user_df = pd.DataFrame(user_data)
+        
     # Features to analyze
     features = ['Age', 'Height', 'Heart_Rate', 'Body_Temp']
 
