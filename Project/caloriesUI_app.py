@@ -1,6 +1,6 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QComboBox, QMessageBox, QFileDialog
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (QApplication, QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout, 
+                             QPushButton, QLineEdit, QComboBox, QMessageBox, QFileDialog)
 
 
 class CaloriePredictor(QWidget):
@@ -110,7 +110,7 @@ class CaloriePredictor(QWidget):
         layout.addLayout(uploadRow)
 
         self.processButton = QPushButton("⚙️ Process CSV Data", self)
-        self.processButton.clicked.connect(self.processData)
+        self.processButton.clicked.connect(self.renderPlot)
         layout.addWidget(self.processButton)
 
         # Placeholder for the Group Prediction Plot
@@ -122,8 +122,6 @@ class CaloriePredictor(QWidget):
 
     # Processes User Input
     def predictCalories(self):
-        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-        from matplotlib.figure import Figure
         import modelFile
 
         age = int(self.ageInput.text())
@@ -172,7 +170,7 @@ class CaloriePredictor(QWidget):
             self.percentileLabel.setText(f"🏅 Percentile Ranking: {percentile}% 🏅")
 
             # Show user's plot (from toggle selection)
-            self.showUserPlot()
+            self.renderPlot(True)
 
         except ValueError:
             QMessageBox.warning(self, "Input Error", "⚠️ Please enter valid numerical values. ⚠️")
@@ -191,13 +189,13 @@ class CaloriePredictor(QWidget):
 
 
     # Sends File and Display Results (Both CSV & User)
-    def processData(self, from_user_input=False)):
+    def renderPlot(self, userInput=False):
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
         from matplotlib.figure import Figure
         import modelFile
 
         try:
-            if from_user_input:
+            if userInput:
                 if not hasattr(self, 'userData') or 'calories' not in self.userData:
                     return
 
@@ -245,11 +243,11 @@ class CaloriePredictor(QWidget):
         
         # Re-render CSV Plot if Loaded
         if hasattr(self, 'csvPath'):
-            self.processData()
+            self.renderPlot(False)
         
         # Re-render User Plot if Available
         if hasattr(self, 'userData') and 'calories' in self.userData:
-            self.showUserPlot()
+            self.renderPlot(True)
 
 
 if __name__ == "__main__":
