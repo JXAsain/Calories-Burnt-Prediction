@@ -7,8 +7,9 @@ class CaloriePredictor(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-    
-    # UI Formate
+
+
+    # UI Format
     def initUI(self):
         self.setWindowTitle("🔥 Calorie Burnt Prediction App 🔥")
         self.setGeometry(100, 100, 400, 300)
@@ -58,12 +59,38 @@ class CaloriePredictor(QWidget):
         self.plotLabel = QLabel(self)
         layout.addWidget(self.plotLabel)
 
-        # Pixel Padding and Divider Line
+        # Pixel Padding
         layout.addSpacing(10)
-        divider = QFrame()
-        divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setFrameShadow(QFrame.Shadow.Sunken)
-        layout.addWidget(divider)
+
+        # Top Divider Line
+        topDivider = QFrame()
+        topDivider.setFrameShape(QFrame.Shape.HLine)
+        topDivider.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(topDivider)
+
+        # Centered layout for toggle button
+        toggleLayout = QHBoxLayout()
+
+        # Toggle Function (False = Histogram, True = Scatter)
+        self.plotToggleButton = QPushButton("View: Histogram", self)
+        self.plotToggleButton.setCheckable(True)
+        self.plotToggleButton.setChecked(False)
+        self.plotToggleButton.setFixedWidth(150)
+        self.plotToggleButton.clicked.connect(self.togglePlotType)
+
+        toggleLayout.addStretch()
+        toggleLayout.addWidget(self.plotToggleButton)
+        toggleLayout.addStretch()
+
+        layout.addLayout(toggleLayout)
+
+        # Bottom Divider Line
+        bottomDivider = QFrame()
+        bottomDivider.setFrameShape(QFrame.Shape.HLine)
+        bottomDivider.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(bottomDivider)
+
+        # Pixal Padding
         layout.addSpacing(10)
 
         # Upload File Section
@@ -124,39 +151,31 @@ class CaloriePredictor(QWidget):
             return
         
         try:
-            userData = {
+            self.userData = {
                 "age": int(age),
                 "gender": gender,
                 "height": int(height),
                 "heart": int(heart_rate),
                 "bodyTemp": float(body_temp)
             }
-            
-            results = modelFile.run(userData)
 
-            # Backend Returns (calories, percentile, figure)
-            if isinstance(results, tuple) and len(results) == 3:
-                predictedCalories, percentile, fig = results
+            # Run the prediction (returns only calories)
+            predicted = modelFile.run(self.userData)
+            predicted_value = float(predicted[0])
+            self.userData["calories"] = predicted_value  # For plot toggle
 
-                self.resultLabel.setText(f"🔥 Estimated Calories Burnt: {predictedCalories:.2f} kcal 🔥")
-                self.percentileLabel.setText(f"🏅 Percentile Ranking: {percentile} % 🏅")
+            # Get percentile separately using calories
+            percentile = modelFile.percentile("Calories", predicted_value)
 
-                # Rendering Plot in UI (Expecting a Matplotlib Figure)
-                layout = self.layout()
-                layout.removeWidget(self.plotLabel)
-                self.plotLabel.deleteLater()
+            # Display results
+            self.resultLabel.setText(f"🔥 Estimated Calories Burnt: {predicted_value:.2f} kcal 🔥")
+            self.percentileLabel.setText(f"🏅 Percentile Ranking: {percentile}% 🏅")
 
-                canvas = FigureCanvas(fig)
-                canvas.setFixedSize(400, 300)
-                self.plotLabel = canvas
-                layout.addWidget(self.plotLabel)
+            # Show user's plot (from toggle selection)
+            self.showUserPlot()
 
-            else:
-                QMessageBox.warning(self, "Backend Error", "⚠️ Unexpected response from the backend. ⚠️")
-        
         except ValueError:
             QMessageBox.warning(self, "Input Error", "⚠️ Please enter valid numerical values. ⚠️")
-
         except Exception as e:
             QMessageBox.critical(self, "Prediction Error", f"⚠️ Failed to retrieve your prediction ⚠️\n{str(e)}")
 
@@ -171,20 +190,35 @@ class CaloriePredictor(QWidget):
             self.csvLoadedLabel.setText(f"✅ {filePath.split('/')[-1]}")
 
 
-    # Sends File and Display Results
-    def processData(self):
+    # Sends File and Display Results (Both CSV & User)
+    def processData(self, from_user_input=False)):
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
         from matplotlib.figure import Figure
         import modelFile
 
-        if not hasattr(self, 'csvPath'):
-            QMessageBox.warning(self, "No File", "⚠️ Please upload a CSV file first. ⚠️")
-            return
-        
         try:
-            # Expecting a Matplotlib Figure
-            fig = modelFile.process_csv(self.csvPath)
-            
+            if from_user_input:
+                if not hasattr(self, 'userData') or 'calories' not in self.userData:
+                    return
+
+                # Toggle for User Plot
+                if self.plotToggleButton.isChecked():
+                    fig = modelFile.userdata_compare_statter(self.userData)
+                else:
+                    fig = modelFile.userdata_compare_histogram(self.userData)
+
+            else:
+                if not hasattr(self, 'csvPath'):
+                    QMessageBox.warning(self, "No File", "⚠️ Please upload a CSV file first.")
+                    return
+
+                # Toggle for CSV Plot
+                if self.plotToggleButton.isChecked():
+                    fig = modelFile.received_csv_data_scatter(self.csvPath)
+                else:
+                    fig = modelFile.received_csv_data_histogram(self.csvPath)
+
+            # Embed Returned Figure
             if isinstance(fig, Figure):
                 canvas = FigureCanvas(fig)
                 canvas.draw()
@@ -195,12 +229,27 @@ class CaloriePredictor(QWidget):
                 self.csvPlotLabel.deleteLater()
                 self.csvPlotLabel = canvas
                 layout.addWidget(self.csvPlotLabel)
-            
             else:
-                QMessageBox.warning(self, "Processing Error", "⚠️ Backend did not return a valid figure. ⚠️")
-        
+                QMessageBox.warning(self, "Plot Error", "⚠️ Backend did not return a valid figure. ⚠️")
+
         except Exception as e:
-            QMessageBox.critical(self, "Processing Error", f"⚠️ Could not process CSV:\n{str(e)} ⚠️")
+            QMessageBox.critical(self, "Processing Error", f"⚠️ Could not render plot:\n{str(e)} ⚠️")
+
+
+    # Updates Toggled Button Label
+    def togglePlotType(self):
+        if self.plotToggleButton.isChecked():
+            self.plotToggleButton.setText("View: Scatter Plot")
+        else:
+            self.plotToggleButton.setText("View: Histogram")
+        
+        # Re-render CSV Plot if Loaded
+        if hasattr(self, 'csvPath'):
+            self.processData()
+        
+        # Re-render User Plot if Available
+        if hasattr(self, 'userData') and 'calories' in self.userData:
+            self.showUserPlot()
 
 
 if __name__ == "__main__":
