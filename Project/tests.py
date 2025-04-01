@@ -2,13 +2,17 @@ import joblib
 import numpy as np
 from PyQt6.QtCore import Qt
 import pytest
-import caloriesUI_app
+from caloriesUI_app.elementsUI import CaloriePredictor
+from caloriesUI_app.eventHandlers import extend_caloriesPredictor
+from PyQt6.QtWidgets import QApplication
 
 
 @pytest.fixture
 def app(qtbot):
+    extend_caloriesPredictor()
     # Initialize the application
-    calorie_app = caloriesUI_app.CaloriePredictor()
+    calorie_app = CaloriePredictor()
+    calorie_app.hide()
     qtbot.addWidget(calorie_app)  # Add the widget to qtbot for lifecycle management
     return calorie_app
 
