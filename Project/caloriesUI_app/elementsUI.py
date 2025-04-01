@@ -1,5 +1,6 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QScrollArea,
-                             QPushButton, QLineEdit, QComboBox, QFrame)
+                             QPushButton, QLineEdit, QComboBox, QFrame, QSizePolicy)
 
 
 class CaloriePredictor(QWidget):
@@ -18,11 +19,12 @@ class CaloriePredictor(QWidget):
 
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         content = QWidget()
-        content.setMinimumSize(600, 400)
-        content.setMinimumHeight(1300)
         scroll.setWidget(content)
+        content.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.contentLayout = QVBoxLayout(content)
 
@@ -70,6 +72,38 @@ class CaloriePredictor(QWidget):
         # Pixel Padding
         self.contentLayout.addSpacing(10)
 
+        # Divider Line
+        topDivider = QFrame()
+        topDivider.setFrameShape(QFrame.Shape.HLine)
+        topDivider.setFrameShadow(QFrame.Shadow.Sunken)
+        self.contentLayout.addWidget(topDivider)
+
+        # Pixal Padding
+        self.contentLayout.addSpacing(10)
+
+        # Upload File Section
+        uploadRow = QHBoxLayout()
+
+        self.uploadButton = QPushButton("📁 Upload CSV", self)
+        self.uploadButton.setFixedWidth(150)
+        self.uploadButton.clicked.connect(self.selectFile)
+
+        # Shows Filename after Upload
+        self.csvLoadedLabel = QLabel("")
+
+        uploadRow.addWidget(self.csvLoadedLabel)
+        uploadRow.addStretch()
+        uploadRow.addWidget(self.uploadButton)
+
+        self.contentLayout.addLayout(uploadRow)
+
+        self.processButton = QPushButton("⚙️ Process CSV Data", self)
+        self.processButton.clicked.connect(self.renderPlot)
+        self.contentLayout.addWidget(self.processButton)
+
+        # Pixel Padding
+        self.contentLayout.addSpacing(10)
+
         # Top Divider Line
         topDivider = QFrame()
         topDivider.setFrameShape(QFrame.Shape.HLine)
@@ -100,27 +134,3 @@ class CaloriePredictor(QWidget):
 
         # Pixal Padding
         self.contentLayout.addSpacing(10)
-
-        # Upload File Section
-        uploadRow = QHBoxLayout()
-
-        self.uploadButton = QPushButton("📁 Upload CSV", self)
-        self.uploadButton.setFixedWidth(150)
-        self.uploadButton.clicked.connect(self.selectFile)
-
-        # Shows Filename after Upload
-        self.csvLoadedLabel = QLabel("")
-
-        uploadRow.addWidget(self.csvLoadedLabel)
-        uploadRow.addStretch()
-        uploadRow.addWidget(self.uploadButton)
-
-        self.contentLayout.addLayout(uploadRow)
-
-        self.processButton = QPushButton("⚙️ Process CSV Data", self)
-        self.processButton.clicked.connect(self.renderPlot)
-        self.contentLayout.addWidget(self.processButton)
-
-        # # Placeholder for the Group Prediction Plot
-        # self.csvPlotLabel = QLabel(self)
-        # self.contentLayout.addWidget(self.csvPlotLabel)

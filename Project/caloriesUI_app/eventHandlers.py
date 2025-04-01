@@ -68,12 +68,15 @@ def selectFile(self):
     if filePath:
         self.csvPath = filePath
         self.csvLoadedLabel.setText(f"✅ {filePath.split('/')[-1]}")
+    
+    if hasattr(self, 'multiFigureGroupCanvas'):
+        self.contentLayout.removeWidget(self.multiFigureGroupCanvas)
+        self.multiFigureGroupCanvas.deleteLater()
+        del self.multiFigureGroupCanvas
 
 
 # Sends File and Display Results (Both CSV & User)
 def renderPlot(self, userInput=False):
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.figure import Figure
     import modelFile
 
     try:
@@ -83,9 +86,9 @@ def renderPlot(self, userInput=False):
 
             # Toggle for User Plot
             if self.plotToggleButton.isChecked():
-                active = modelFile.userdata_compare_statter(self.userData)
+                plots = modelFile.userdata_compare_statter(self.userData)
             else:
-                active = modelFile.userdata_compare_histogram(self.userData)
+                plots = modelFile.userdata_compare_histogram(self.userData)
 
         else:
             if not hasattr(self, 'csvPath'):
@@ -94,43 +97,74 @@ def renderPlot(self, userInput=False):
 
             # Toggle for CSV Plot
             if self.plotToggleButton.isChecked():
-                active = modelFile.received_csv_data_scatter(self.csvPath)
+                plots = modelFile.received_csv_data_scatter(self.csvPath)
             else:
-                active = modelFile.received_csv_data_histogram(self.csvPath)
+                plots = modelFile.received_csv_data_histogram(self.csvPath)
 
-        # Embed the Figure
-        if isinstance(active, Figure):
-            newCanvas = FigureCanvas(active)
-            newCanvas.setMinimumSize(900, 600)
-            newCanvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            newCanvas.updateGeometry()
-            newCanvas.draw()
+        # Replace Previous Group Based on Context if Any
+        if hasattr(self, 'multiFigureGroupCanvas'):
+            self.contentLayout.removeWidget(self.multiFigureGroupCanvas)
+            self.multiFigureGroupCanvas.deleteLater()
+            del self.multiFigureGroupCanvas
 
-            # Replace Canvas Based on Context
-            for canvas_attr in ['csvPlotCanvas', 'userPlotCanvas']:
-                if hasattr(self, canvas_attr):
-                    oldCanvas = getattr(self, canvas_attr)
-                    self.contentLayout.removeWidget(oldCanvas)
-                    oldCanvas.deleteLater()
-                    delattr(self, canvas_attr)
+        groupContainer = buildPlotGroup(plots)
 
-            self.contentLayout.addSpacing(10)
-
-            if userInput:
-                self.userPlotCanvas = newCanvas
-                self.contentLayout.addWidget(self.userPlotCanvas)
-            else:
-                self.csvPlotCanvas = newCanvas
-                self.contentLayout.addWidget(self.csvPlotCanvas)
-
-            self.contentLayout.addSpacing(10)
-
-        else:
-            QMessageBox.warning(self, "Plot Error", "⚠️ Backend did not return a valid figure. ⚠️")
+        self.multiFigureGroupCanvas = groupContainer
+        self.contentLayout.addWidget(self.multiFigureGroupCanvas)
 
     except Exception as e:
         QMessageBox.critical(self, "Processing Error", f"⚠️ Could not render plot:\n{str(e)} ⚠️")
 
+
+# Build New Group Layout
+def buildPlotGroup(plots: dict):
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget, QVBoxLayout, QSizePolicy
+    from PyQt6.QtCore import Qt
+
+    groupLayout = QVBoxLayout()
+            
+    for desc, fig in plots.items():
+        canvas = FigureCanvas(fig)
+        canvas.setMinimumHeight(canvas.sizeHint().height())
+        canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        canvas.updateGeometry()
+        canvas.draw()
+
+        label = QLabel(desc)
+        label.setWordWrap(True)
+        label.setMinimumWidth(300)
+        label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+
+        # Bold Text and Draws Box
+        label.setStyleSheet("""
+            QLabel {
+                font-weight: bold;
+                font-size: 14px;
+                color: #333333;
+                border: 1px solid #555;
+                padding: 8px;
+                border-radius: 6px;
+                background-color: #f5f5f5;
+            }
+        """)
+
+        rowLayout = QHBoxLayout()
+        rowLayout.addWidget(canvas, 3)
+        rowLayout.addSpacing(10)
+        rowLayout.addWidget(label, 2)
+
+        rowWidget = QWidget()
+        rowWidget.setLayout(rowLayout)
+
+        groupLayout.addSpacing(10)
+        groupLayout.addWidget(rowWidget)
+
+    groupContainer = QWidget()
+    groupContainer.setLayout(groupLayout)
+    return groupContainer
+   
 
 # Updates Toggled Button Label
 def togglePlotType(self):
