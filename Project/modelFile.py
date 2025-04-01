@@ -4,6 +4,8 @@ from sklearn.preprocessing import StandardScaler
 import warnings 
 import pandas as pd
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
 import seaborn as sb
 
 
@@ -66,12 +68,11 @@ def userdata_compare_histogram(dict):
     # Features to analyze
     features = ['Age', 'Height', 'Heart_Rate', 'Body_Temp']
 
-    # Create subplots
-    fig = Figure(figsize=(10, 8))
-    axes = fig.subplots(2, 2)
+    # Create separate figures for each feature
+    figures = {}
 
     for i, col in enumerate(features):
-        ax = axes[i // 2, i % 2]
+        fig, ax = plt.subplots(figsize=(5, 4))
 
         # Plot histogram with KDE for the original dataset
         sb.histplot(df[col], kde=True, bins=30, color='blue', label='Others', alpha=0.6, ax=ax)
@@ -86,8 +87,10 @@ def userdata_compare_histogram(dict):
         ax.set_ylabel('Density')
         ax.legend()
 
-    fig.tight_layout()
-    return fig
+        # Store figure in dictionary
+        figures[col] = fig
+
+    return figures
 
 
 # uses the user input to put them into a histogram of our data
@@ -110,12 +113,11 @@ def userdata_compare_statter(dict):
     # Features to analyze
     features = ['Age', 'Height', 'Heart_Rate', 'Body_Temp']
 
-    # Create subplots
-    fig = Figure(figsize=(10, 8))
-    axes = fig.subplots(2, 2)
+    # Create separate figures for each feature
+    figures = {}
 
     for i, col in enumerate(features):
-        ax = axes[i // 2, i % 2]
+        fig, ax = plt.subplots(figsize=(5, 4))
         
         # Sample data for readability
         x1 = df.sample(1000)  
@@ -132,8 +134,10 @@ def userdata_compare_statter(dict):
         ax.set_ylabel('Calories Burned')
         ax.legend()
 
-    fig.tight_layout()
-    return fig
+        # Store figure in dictionary
+        figures[col] = fig
+
+    return figures
 
 # Generates histogram from CSV file
 def received_csv_data_histogram(csv):
@@ -144,12 +148,11 @@ def received_csv_data_histogram(csv):
     # Features to analyze
     features = ['Age', 'Height', 'Heart_Rate', 'Body_Temp']
 
-    # Create subplots for normal distribution visualization
-    fig = Figure(figsize=(10, 8))
-    axes = fig.subplots(2, 2)
+    # Create separate figures for each feature
+    figures = {}
 
     for i, col in enumerate(features):
-        ax = axes[i // 2, i % 2]
+        fig, ax = plt.subplots(figsize=(5, 4))
         
         # Plot histogram with KDE (smooth curve to approximate normal distribution)
         sb.histplot(df[col], kde=True, bins=30, color='blue', alpha=0.6, ax=ax)
@@ -159,8 +162,9 @@ def received_csv_data_histogram(csv):
         ax.set_xlabel(col)
         ax.set_ylabel('Density')
 
-    fig.tight_layout()
-    return fig
+        # Store figure in dictionary
+        figures[col] = fig
+    return figures
 
 # Generates scatter plot from CSV file
 def received_csv_data_scatter(csv):
@@ -179,12 +183,11 @@ def received_csv_data_scatter(csv):
     if df[required_columns].isnull().values.any():
         raise ValueError("CSV contains missing values in required columns.")
 
-    # Create subplots
-    fig = Figure(figsize=(10, 8))
-    axes = fig.subplots(2, 2)
+    # Create separate figures for each feature
+    figures = {}
 
     for i, col in enumerate(required_columns[:-1]):  # Excluding 'Calories' from x-axis features
-        ax = axes[i // 2, i % 2]
+        fig, ax = plt.subplots(figsize=(5, 4))
         
         # Sample data for readability
         x1 = df.sample(min(1000, len(df)))  # Ensure sampling doesn't exceed available rows
@@ -197,8 +200,9 @@ def received_csv_data_scatter(csv):
         ax.set_xlabel(col)
         ax.set_ylabel('Calories Burned')
 
-    fig.tight_layout()
-    return fig
+        # Store figure in dictionary
+        figures[col] = fig
+    return figures
 
 
 def predict_and_save_csv(input_csv, output_csv):
