@@ -86,9 +86,43 @@ def renderPlot(self, userInput=False):
 
             # Toggle for User Plot
             if self.plotToggleButton.isChecked():
-                plots = modelFile.userdata_compare_statter(self.userData)
+                plots = {
+                    "Age vs Calories Burned": {
+                        "figure": modelFile.userdata_compare_statter(self.userData)["Age"],
+                        "explanation": f"This scatter plot shows how you compare to others in your age group on calories burned. \n\nYou are in the {modelFile.percentile('Age', self.userData['age'])} percentile for age."
+                    },
+                    "Height vs Calories Burned": {
+                        "figure": modelFile.userdata_compare_statter(self.userData)["Height"],
+                        "explanation": f"This scatter plot shows how you compare to others in around your height group on calories burnt. \n\nYou are in the {modelFile.percentile('Height', self.userData['height'])} percentile for height. "
+                    },
+                    "Heart Rate vs Calories Burned": {
+                        "figure": modelFile.userdata_compare_statter(self.userData)["Heart_Rate"],
+                        "explanation": f"Higher heart rates generally lead to increased calorie burn. This scatter plot compares your heart rate and calories burned to 1000 others. \n\nYou are in the {modelFile.percentile('Heart_Rate', self.userData['heart'])} percentile for heart rate."
+                    },
+                    "Body Temperature vs Calories Burned": {
+                        "figure": modelFile.userdata_compare_statter(self.userData)["Body_Temp"],
+                        "explanation": f"This scatter plot visualizes the effect of body temperature on calorie burning. Your data point is highlighted in red. \n\nYou are in the {modelFile.percentile('Body_Temp', self.userData['bodyTemp'])} percentile for body temperature."
+                    }
+                }
             else:
-                plots = modelFile.userdata_compare_histogram(self.userData)
+                plots = {
+                    "Age Distribution": {
+                        "figure": modelFile.userdata_compare_histogram(self.userData)["Age"],
+                        "explanation": f"This histogram shows the age distribution of users. Your age is marked in red. \n\nYou are in the {modelFile.percentile('Age', self.userData['age'])} percentile for age."
+                    },
+                    "Height Distribution": {
+                        "figure": modelFile.userdata_compare_histogram(self.userData)["Height"],
+                        "explanation": f"This histogram shows the height distribution of users. Your height is marked in red. \n\nYou are in the {modelFile.percentile('Height', self.userData['height'])} percentile for height."
+                    },
+                    "Heart Rate Distribution": {
+                        "figure": modelFile.userdata_compare_histogram(self.userData)["Heart_Rate"],
+                        "explanation": f"This histogram visualizes how your heart rate compares to other users. \n\nYou are in the {modelFile.percentile('Heart_Rate', self.userData['heart'])} percentile for heart rate."
+                    },
+                    "Body Temperature Distribution": {
+                        "figure": modelFile.userdata_compare_histogram(self.userData)["Body_Temp"],
+                        "explanation": f"This histogram displays the distribution of body temperatures among users. \n\nYou are in the {modelFile.percentile('Body_Temp', self.userData['bodyTemp'])} percentile for body temperature."
+                    }
+                }
 
         else:
             if not hasattr(self, 'csvPath'):
@@ -97,9 +131,43 @@ def renderPlot(self, userInput=False):
 
             # Toggle for CSV Plot
             if self.plotToggleButton.isChecked():
-                plots = modelFile.received_csv_data_scatter(self.csvPath)
+                plots = {
+                    "Age vs Calories Burned": {
+                        "figure": modelFile.received_csv_data_scatter(self.csvPath)["Age"],
+                        "explanation": "This scatter plot shows the relationship between age and calories burned in the dataset."
+                    },
+                    "Height vs Calories Burned": {
+                        "figure": modelFile.received_csv_data_scatter(self.csvPath)["Height"],
+                        "explanation": "This scatter plot visualizes how height affects calories burned."
+                    },
+                    "Heart Rate vs Calories Burned": {
+                        "figure": modelFile.received_csv_data_scatter(self.csvPath)["Heart_Rate"],
+                        "explanation": "Heart rate plays a significant role in calorie burning. This scatter plot compares heart rates to calories burned."
+                    },
+                    "Body Temperature vs Calories Burned": {
+                        "figure": modelFile.received_csv_data_scatter(self.csvPath)["Body_Temp"],
+                        "explanation": "This scatter plot examines how body temperature influences calorie burning."
+                    }
+                }
             else:
-                plots = modelFile.received_csv_data_histogram(self.csvPath)
+                plots = {
+                    "Age Distribution": {
+                        "figure": modelFile.received_csv_data_histogram(self.csvPath)["Age"],
+                        "explanation": "This histogram represents the age distribution in the dataset."
+                    },
+                    "Height Distribution": {
+                        "figure": modelFile.received_csv_data_histogram(self.csvPath)["Height"],
+                        "explanation": "This histogram shows the distribution of heights in the dataset."
+                    },
+                    "Heart Rate Distribution": {
+                        "figure": modelFile.received_csv_data_histogram(self.csvPath)["Heart_Rate"],
+                        "explanation": "This histogram represents the distribution of heart rates in the dataset."
+                    },
+                    "Body Temperature Distribution": {
+                        "figure": modelFile.received_csv_data_histogram(self.csvPath)["Body_Temp"],
+                        "explanation": "This histogram visualizes the body temperature distribution within the dataset."
+                    }
+                }
 
         # Replace Previous Group Based on Context if Any
         if hasattr(self, 'multiFigureGroupCanvas'):
@@ -123,15 +191,19 @@ def buildPlotGroup(plots: dict):
     from PyQt6.QtCore import Qt
 
     groupLayout = QVBoxLayout()
-            
-    for desc, fig in plots.items():
+
+    for desc, details in plots.items():
+        fig = details["figure"]
+        explanation = details["explanation"]
+
         canvas = FigureCanvas(fig)
         canvas.setMinimumHeight(canvas.sizeHint().height())
         canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         canvas.updateGeometry()
         canvas.draw()
 
-        label = QLabel(desc)
+        label = QLabel(explanation)  # Displaying a detailed explanation instead of a simple title
+
         label.setWordWrap(True)
         label.setMinimumWidth(300)
         label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
