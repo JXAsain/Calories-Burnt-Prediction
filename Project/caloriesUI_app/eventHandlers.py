@@ -141,6 +141,7 @@ def renderPlot(self, userInput=False):
                         plot["explanation"] += "\n\nYour heart rate implies you're at a resting rate. Is that the best you can do?"
                     if user_hr < 60:
                         plot["explanation"] += "\n\nYour heart rate implies that you are sleeping. If that is not the case, consider contacting your doctor."
+                # body temperature comment additions
                 if "Body Temperature" in key:
                     user_bt = self.userData['bodyTemp']
                     user_bt_fahrenheit=(user_bt*1.8) + 32 
