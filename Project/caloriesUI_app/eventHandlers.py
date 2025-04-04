@@ -124,6 +124,33 @@ def renderPlot(self, userInput=False):
                     }
                 }
 
+            # modify explanations based on conditions
+            for key, plot in plots.items():
+                # age comment additions
+                if "Age" in key:
+                    user_age = self.userData['age']
+                    if user_age > 40:
+                        plot["explanation"] += "\n\nAt your age, you should consult your doctor before you continue exercising."
+                # heart rate comment additions
+                if "Heart Rate" in key:
+                    user_hr = self.userData['heart']
+                    user_max_hr = 220-self.userData['age']
+                    if user_hr > user_max_hr:
+                        plot["explanation"] += f"\n\nAt your age, you're above your estimated Maximum Heart Rate, {user_max_hr} bpm, please take it easy."
+                    if 60 <= user_hr < 100:
+                        plot["explanation"] += "\n\nYour heart rate implies you're at a resting rate. Is that the best you can do?"
+                    if user_hr < 60:
+                        plot["explanation"] += "\n\nYour heart rate implies that you are sleeping. If that is not the case, consider contacting your doctor."
+                if "Body Temperature" in key:
+                    user_bt = self.userData['bodyTemp']
+                    user_bt_fahrenheit=(user_bt*1.8) + 32 
+                    if user_bt > 39.5:
+                        plot["explanation"] += f"\n\nWARNING: Your body temperature is at a dangerous level of {user_bt} degrees Celsius ({user_bt_fahrenheit} degrees Fahrenheit). Please seek immediate medical attention if temperature doesn't decrease."
+                    if user_bt <= 35:
+                        plot["explanation"] += f"\n\nWARNING: Your body temperature is at a dangerous level of {user_bt} degrees Celsius ({user_bt_fahrenheit} degrees Fahrenheit). Please seek immediate medical attention, you maybe experiencing hypothermia."
+
+                
+
         else:
             if not hasattr(self, 'csvPath'):
                 QMessageBox.warning(self, "No File", "⚠️ Please upload a CSV file first. ⚠️")
